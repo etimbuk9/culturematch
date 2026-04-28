@@ -1,0 +1,49 @@
+.main {
+    background-color: #0b1220;
+    color: white;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0px 6px 20px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    color: black;
+}
+
+.stButton>button {
+    background-color: #1e40af;
+    color: white;
+    border-radius: 10px;
+    padding: 10px 18px;
+    border: none;
+}
+
+.stButton>button:hover {
+    background-color: #2563eb;
+}.main {
+    background-color: #0b1220;
+    color: white;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0px 6px 20px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    color: black;
+}
+
+.stButton>button {
+    background-color: #1e40af;
+    color: white;
+    border-radius: 10px;
+    padding: 10px 18px;
+    border: none;
+}
+
+.stButton>button:hover {
+    background-color: #2563eb;
+}

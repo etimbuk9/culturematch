@@ -1,0 +1,51 @@
+# ========================================
+# 🐍 PYTHON ENVIRONMENT & BUILD ARTIFACTS
+# ----------------------------------------
+# Virtual environments (ALWAYS ignore these!)
+venv/
+env/
+.venv/
+.virtualenv/
+*.env
+.DS_Store
+
+# Compiled Python files and cache directories
+__pycache__/
+*.pyc
+*.pyo
+
+# Byte-compiled files
+*.bak
+
+# Dependencies (If you use a package manager like Poetry/Pipenv that creates a dedicated cache)
+# poetry.lock
+# Pipfile.lock
+
+
+# ========================================
+# 💾 DATABASE FILES & LOCAL DATA
+# ----------------------------------------
+# SQLite databases (The most common local DB file)
+*.sqlite
+*.sqlite3
+*.db
+
+# If you use a dedicated database folder (e.g., for local PostgreSQL data)
+# Only uncomment and use if your DB data lives in a specific folder
+# db/
+# data/
+
+
+# ========================================
+# 💻 IDE, OS & OS-SPECIFIC FILES
+# ----------------------------------------
+# IDE/Editor specific files (Visual Studio Code, PyCharm, etc.)
+.vscode/
+.idea/
+.DS_Store # macOS system file
+Thumbs.db # Windows system file
+
+# Log files and temporary data
+*.log
+temp/
+backup/
