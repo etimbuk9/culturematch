@@ -39,7 +39,7 @@ def show():
     if uploaded:
         os.makedirs("data/uploads", exist_ok=True)
 
-        file_path = f"data/uploads/{uploaded.name}"
+        file_path = f"data/uploads/company_file.pdf"
         with open(file_path, "wb") as f:
             f.write(uploaded.getbuffer())
 
@@ -133,12 +133,14 @@ def show():
 
                         # SAFE CONCAT (always DataFrame now)
                         st.session_state.company_jobs = pd.concat(
-                            [st.session_state.company_jobs, pd.DataFrame([new_job])],
+                            [st.session_state.company_jobs,
+                                pd.DataFrame([new_job])],
                             ignore_index=True
                         )
 
                         st.session_state.jobs_df = pd.concat(
-                            [st.session_state.jobs_df, pd.DataFrame([new_job])],
+                            [st.session_state.jobs_df,
+                                pd.DataFrame([new_job])],
                             ignore_index=True
                         )
 
@@ -158,9 +160,12 @@ def show():
                     with st.expander(f"{job['role']} – {job['company']}"):
 
                         st.markdown(f"**Skills:** {', '.join(job['skills'])}")
-                        st.markdown(f"**Culture:** {', '.join(job['culture'])}")
-                        st.markdown(f"**Personality:** {', '.join(job['personality'])}")
-                        st.markdown(f"**Character:** {', '.join(job['character'])}")
+                        st.markdown(
+                            f"**Culture:** {', '.join(job['culture'])}")
+                        st.markdown(
+                            f"**Personality:** {', '.join(job['personality'])}")
+                        st.markdown(
+                            f"**Character:** {', '.join(job['character'])}")
 
                         # SAFE MATCH CHECK
                         if st.session_state.get("student_profile"):
@@ -196,7 +201,6 @@ def show():
                     view_df[["company", "role", "skills", "culture"]],
                     use_container_width=True
                 )
-
 
 
 # import streamlit as st
@@ -336,7 +340,3 @@ def show():
 #                 for col in ["skills", "culture", "personality", "character"]:
 #                     view_df[col] = view_df[col].apply(lambda x: ", ".join(x))
 #                 st.dataframe(view_df[["company", "role", "skills", "culture"]], use_container_width=True)
-
-
-
-        

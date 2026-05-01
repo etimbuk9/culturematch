@@ -49,3 +49,4 @@ Thumbs.db # Windows system file
 *.log
 temp/
 backup/
+*company_file.pdf

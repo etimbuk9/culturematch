@@ -15,7 +15,7 @@ def show():
         st.warning("Create student profile first")
         return
 
-    vectorstore = build_vectorstore("data/uploads/company_jobs.pdf")
+    vectorstore = build_vectorstore("data/uploads/company_file.pdf", k=10)
 
     if not vectorstore:
         st.error("Upload company PDF first")
