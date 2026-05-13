@@ -2,9 +2,15 @@ import streamlit as st
 from core.rag_engine import build_vectorstore
 from core.llm_engine import build_matcher
 from core.matcher import calculate_match_score
+import time
+import pickle
+import os
+import core.rag_merger as rag_merger
 
 
-def show():
+def show_old():
+
+    full_start = time.time()
 
     st.title("AI Match Engine")
 
@@ -15,7 +21,19 @@ def show():
         st.warning("Create student profile first")
         return
 
-    vectorstore = build_vectorstore("data/uploads/company_file.pdf", k=10)
+    start = time.time()
+
+    if 'vectorstore.pkl' in os.listdir():
+        with open('vectorstore.pkl', 'rb') as f:
+            vectorstore = pickle.load(f)
+    else:
+        vectorstore = build_vectorstore("data/uploads/company_file.pdf", k=10)
+        with open('vectorstore.pkl', 'wb') as f:
+            pickle.dump(vectorstore, f)
+
+    end = time.time()
+
+    print(f"Vectorstore build time: {end - start} seconds")
 
     if not vectorstore:
         st.error("Upload company PDF first")
@@ -41,15 +59,34 @@ def show():
         st.metric("Fit Score", res.fit_score)
         st.write(res.reasoning)
 
-    # for idx, r in enumerate(results):
+    full_end = time.time()
+    print(f"Total match engine time: {full_end - full_start} seconds")
 
-    #     res = matcher(
-    #         student_profile=str(student),
-    #         job_context=r.page_content
-    #     )
 
-    #     st.markdown("---")
-    #     st.write(f"Job Match {idx + 1}")
-    #     st.subheader(f"Job Title: {res.job_title}")
-    #     st.metric("Fit Score", res.fit_score)
-    #     st.write(res.reasoning)
+def show():
+
+    full_start = time.time()
+
+    st.title("AI Match Engine")
+
+    student = st.session_state.get("student_profile")
+    print(student)
+
+    if not student:
+        st.warning("Create student profile first")
+        return
+
+    rag = rag_merger.RAG()
+
+    with st.spinner("Finding your best job matches..."):
+        response = rag(student_profile=str(student))
+
+    for idx, fit in enumerate(response.ranked_fits):
+        st.markdown("---")
+        st.write(f"Job Match {idx + 1}")
+        st.subheader(f"Job Title: {fit.job_title}")
+        st.metric("Fit Score", fit.fit_score)
+        st.write(fit.reasoning)
+
+    full_end = time.time()
+    print(f"Total match engine time: {full_end - full_start} seconds")

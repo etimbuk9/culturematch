@@ -2,13 +2,14 @@ import dspy
 import streamlit as st
 
 
+@st.cache_resource
 def init_llm():
     global lm
 
     lm = dspy.LM(
         model="ollama_chat/mistral",
-        # model="ollama/gemma4:31b-cloud",
-        api_base="http://127.0.0.1:11434"
+        # model="ollama_chat/gemma4:31b-cloud",
+        api_base="http://localhost:11434",
     )
     dspy.settings.configure(lm=lm)
     st.session_state["lm"] = lm

@@ -12,6 +12,9 @@ def init_session():
     if "skill_levels" not in st.session_state:
         st.session_state.skill_levels = {}
 
+    if "profile_draft" not in st.session_state:
+        st.session_state.profile_draft = {}
+
     if "show_remaining_jobs" not in st.session_state:
         st.session_state.show_remaining_jobs = False
 

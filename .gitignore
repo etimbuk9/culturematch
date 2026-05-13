@@ -50,3 +50,4 @@ Thumbs.db # Windows system file
 temp/
 backup/
 *company_file.pdf
+vectorstore.pkl
