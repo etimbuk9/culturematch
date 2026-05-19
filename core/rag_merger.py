@@ -6,12 +6,16 @@ from sentence_transformers import SentenceTransformer
 import dspy
 from pypdf import PdfReader
 import torch
+import pickle
+import os
+import streamlit as st
 
 
 lm = dspy.LM(
-    model='ollama_chat/gemma4:31b-cloud',
+    model='ollama_chat/gemma4',
     api_base="http://127.0.0.1:11434",
     api_key='',
+    cache=True,
 )
 
 dspy.settings.configure(lm=lm)
@@ -31,9 +35,21 @@ def initialize():
         for chunk in _split_text(page_text, 700, 200):
             corpus.append(chunk)
 
-    st_model = SentenceTransformer(
-        "sentence-transformers/all-MiniLM-L6-v2", device=device)
-    print('Model loaded')
+    if not os.path.exists('vectorstore.pkl'):
+        st.warning(
+            "Building vectorstore for the first time. This may take a moment...")
+
+        st_model = SentenceTransformer(
+            "sentence-transformers/all-MiniLM-L6-v2", device=device)
+        print('Model loaded')
+
+        with open('vectorstore.pkl', 'wb') as f:
+            pickle.dump(st_model, f)
+    else:
+        with open('vectorstore.pkl', 'rb') as f:
+            st_model = pickle.load(f)
+        print('Model loaded from cache')
+
     embedder = dspy.Embedder(st_model.encode, batch_size=64)
     print('Embedder created')
 
