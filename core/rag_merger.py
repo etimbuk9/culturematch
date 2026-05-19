@@ -1,4 +1,5 @@
 from typing import Literal
+import threading
 import dspy
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -11,14 +12,44 @@ import os
 import streamlit as st
 
 
-lm = dspy.LM(
-    model='ollama_chat/gemma4',
+INFERENCE_TIMEOUT = 65  # seconds before switching to fallback model
+
+primary_lm = dspy.LM(
+    model='ollama_chat/mistral',
     api_base="http://127.0.0.1:11434",
     api_key='',
     cache=True,
 )
 
-dspy.settings.configure(lm=lm)
+fallback_lm = dspy.LM(
+    model='ollama_chat/gemma4:31b-cloud',
+    api_base="http://127.0.0.1:11434",
+    api_key='',
+    cache=True,
+)
+
+dspy.settings.configure(lm=primary_lm)
+
+
+def _timed_call(fn, timeout, *args, **kwargs):
+    result_box = [None]
+    exc_box = [None]
+
+    def _run():
+        try:
+            result_box[0] = fn(*args, **kwargs)
+        except Exception as e:
+            exc_box[0] = e
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    t.join(timeout)
+
+    if t.is_alive():
+        return None, TimeoutError(f"Inference exceeded {timeout}s")
+    if exc_box[0]:
+        return None, exc_box[0]
+    return result_box[0], None
 
 
 def initialize():
@@ -161,11 +192,29 @@ class RAG(dspy.Module):
     def __init__(self):
         self.respond = dspy.ChainOfThought(RagResponse)
 
+    def _infer(self, lm, student_profile, job_context):
+        with dspy.context(lm=lm):
+            return self.respond(student_profile=student_profile, job_context=job_context)
+
     def forward(self, student_profile: str):
         search = initialize()
         ctx_passages = search(student_profile).passages
         job_context = "\n\n".join([f"- {p}" for p in ctx_passages])
-        return self.respond(student_profile=student_profile, job_context=job_context)
+
+        result, err = _timed_call(
+            self._infer,
+            INFERENCE_TIMEOUT,
+            primary_lm,
+            student_profile,
+            job_context,
+        )
+
+        if err:
+            st.warning(
+                "Mistral is taking too long — switching to Gemma4 (31B)...")
+            result = self._infer(fallback_lm, student_profile, job_context)
+
+        return result
 
 
 rag = RAG()
