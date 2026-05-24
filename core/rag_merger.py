@@ -12,7 +12,7 @@ import os
 import streamlit as st
 
 
-INFERENCE_TIMEOUT = 65  # seconds before switching to fallback model
+INFERENCE_TIMEOUT = 30  # seconds before switching to fallback model
 
 primary_lm = dspy.LM(
     model='ollama_chat/mistral',
@@ -27,8 +27,6 @@ fallback_lm = dspy.LM(
     api_key='',
     cache=True,
 )
-
-dspy.settings.configure(lm=primary_lm)
 
 
 def _timed_call(fn, timeout, *args, **kwargs):
@@ -53,8 +51,6 @@ def _timed_call(fn, timeout, *args, **kwargs):
 
 
 def initialize():
-    global lm
-
     load_dotenv()
 
     device = "mps" if torch.backends.mps.is_available() else "cpu"
@@ -170,7 +166,12 @@ def _split_text(
 class JobFit(BaseModel):
     job_title: str
     fit_score: float
+    skills_alignment_score: float
+    culture_alignment_score: float
+    personality_alignment_score: float
+    character_alignment_score: float
     reasoning: str
+    required_skills: list[str] = []
 
 
 class RagResponse(dspy.Signature):
@@ -183,6 +184,8 @@ class RagResponse(dspy.Signature):
             'Each entry must include job_title (concise, directly from context), '
             'fit_score (0 to 100 float), and reasoning (personal, second-person, specific '
             'to the student profile and job). Explain why the student is a good fit or not for the job, highlighting specific aspects of the student profile that align with or do not meet the requirements of the job context. Also use terms like you instead of the student name to make it more personal.'
+            'You are also to include sub-scores for skills_alignment_score, culture_alignment_score, personality_alignment_score, and character_alignment_score that contribute to the overall fit_score. You are to determine how well that aspect of the student profile matches the job context and assign a score from 0 to 100 for each, which should be reflected in the reasoning.'
+            'Finally, extract a list of required skills from the job context and include it in the required_skills field for each job fit.'
         )
     )
 
@@ -192,8 +195,8 @@ class RAG(dspy.Module):
     def __init__(self):
         self.respond = dspy.ChainOfThought(RagResponse)
 
-    def _infer(self, lm, student_profile, job_context):
-        with dspy.context(lm=lm):
+    def _infer(self, student_profile, job_context, lm=None):
+        with dspy.context(lm=lm or primary_lm):
             return self.respond(student_profile=student_profile, job_context=job_context)
 
     def forward(self, student_profile: str):
@@ -204,15 +207,15 @@ class RAG(dspy.Module):
         result, err = _timed_call(
             self._infer,
             INFERENCE_TIMEOUT,
-            primary_lm,
             student_profile,
             job_context,
+            lm=primary_lm,
         )
 
         if err:
             st.warning(
                 "Mistral is taking too long — switching to Gemma4 (31B)...")
-            result = self._infer(fallback_lm, student_profile, job_context)
+            result = self._infer(student_profile, job_context, lm=fallback_lm)
 
         return result
 

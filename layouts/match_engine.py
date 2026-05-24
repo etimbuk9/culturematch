@@ -81,7 +81,11 @@ def show():
     with st.spinner("Finding your best job matches..."):
         response = rag(student_profile=str(student))
 
-    for idx, fit in enumerate(response.ranked_fits):
+    st.session_state["company_jobs"] = response.ranked_fits
+    output = sorted(response.ranked_fits,
+                    key=lambda x: x.fit_score, reverse=True)[:5]
+
+    for idx, fit in enumerate(output):
         st.markdown("---")
         st.write(f"Job Match {idx + 1}")
         st.subheader(f"Job Title: {fit.job_title}")

@@ -79,6 +79,7 @@ ormsgpack==1.12.2
 packaging==26.1
 pandas==2.3.3
 pillow==12.2.0
+plotly==6.7.0
 propcache==0.4.1
 protobuf==7.34.1
 pyarrow==23.0.1
